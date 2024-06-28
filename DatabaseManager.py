@@ -1,7 +1,7 @@
 import mysql.connector
 
 mydb = mysql.connector.connect(
-  host="localhost",
-  user="yourusername",
-  password="yourpassword"
+  host="brandon@100.64.138.178",
+  user="brandon",
+  password="MyServer22!"
 )
