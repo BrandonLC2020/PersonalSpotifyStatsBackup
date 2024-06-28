@@ -6,7 +6,7 @@ load_dotenv()
 CLIENT_ID = os.getenv('CLIENT_ID')
 CLIENT_SECRET = os.getenv('CLIENT_SECRET')
 
-def get_access_token(): 
+def get_access_token(self): 
         url = 'https://accounts.spotify.com/api/token'
         headers = { 'Content-Type' : 'application/x-www-form-urlencoded' }
         data = f"grant_type=client_credentials&client_id={CLIENT_ID}&client_secret={CLIENT_SECRET}"
@@ -26,6 +26,37 @@ def get_access_token():
 
 
 class SpotifyAPIManager:
-    
     def __init__(self):
         self.access_token = get_access_token()
+
+    def get_top_tracks(self):
+        url = 'https://api.spotify.com/v1/me/top/tracks?time_range=short_term&limit=50&offset=0'
+        headers = { 'Authorization' : f"Bearer {self.access_token}" }
+        try:
+            top_tracks_response = requests.post(url, headers=headers)
+
+            if top_tracks_response.status_code == 200:
+                top_tracks_json = top_tracks_response.json()
+                return top_tracks_json
+            else:
+                print('Error:', top_tracks_response.status_code)
+                return None
+        except requests.exceptions.RequestException as e:
+            print('Error:', e)
+            return None
+
+    def get_top_artists(self):
+        url = 'https://api.spotify.com/v1/me/top/artists?time_range=short_term&limit=50&offset=0'
+        headers = { 'Authorization' : f"Bearer {self.access_token}" }
+        try:
+            top_artists_response = requests.post(url, headers=headers)
+
+            if top_artists_response.status_code == 200:
+                top_artists_json = top_artists_response.json()
+                return top_artists_json
+            else:
+                print('Error:', top_artists_response.status_code)
+                return None
+        except requests.exceptions.RequestException as e:
+            print('Error:', e)
+            return None 
