@@ -1,4 +1,7 @@
 import requests
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def get_access_token(): 
     url = 'https://accounts.spotify.com/api/token'

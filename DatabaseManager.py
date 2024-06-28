@@ -1,10 +1,13 @@
 import mysql.connector
+from dotenv import load_dotenv
+
+load_dotenv()
 
 mydb = mysql.connector.connect(
-  host="brandon@100.64.138.178",
-  user="brandon",
-  password="MyServer22!",
-  database="mydatabase"
+  host="",
+  user="",
+  password="",
+  database=""
 )
 
 mycursor = mydb.cursor()
