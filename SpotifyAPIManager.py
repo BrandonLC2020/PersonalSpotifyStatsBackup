@@ -34,7 +34,7 @@ class SpotifyAPIManager:
 
     def get_top_tracks(self):
         url = 'https://api.spotify.com/v1/me/top/tracks?time_range=short_term&limit=50&offset=0'
-        headers = { 'Authorization' : f'{self.token_type} {self.access_token}' }
+        headers = { 'Authorization' : f"{self.token_type} {self.access_token}" }
         try:
             top_tracks_response = requests.get(url, headers=headers)
 
