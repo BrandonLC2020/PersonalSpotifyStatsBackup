@@ -25,7 +25,8 @@ def get_user_authorization():
     }
     try:
         authorization_response = requests.post(url, params=params)
-        
+        print(authorization_response.status_code)
+
     except requests.exceptions.RequestException as e:
         print('Error:', e)
         return None
