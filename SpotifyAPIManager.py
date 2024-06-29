@@ -2,12 +2,15 @@ import requests
 import os
 import string
 import random
+from urllib.parse import urlparse
+from urllib.parse import parse_qs
 from dotenv import load_dotenv
+from SpotifyAuthorizationManager import SpotifyAuthorizationManager
 
 load_dotenv()
 CLIENT_ID = os.getenv('CLIENT_ID')
 CLIENT_SECRET = os.getenv('CLIENT_SECRET')
-REDIRECT_URI = os.getenv('REDIRECT_URI')
+REDIRECT_URI = os.getenv('REDIRECT_URI_LOCAL')
 
 def generate_random_string(length):
     letters = string.ascii_letters
@@ -25,6 +28,7 @@ def get_user_authorization():
     }
     try:
         authorization_response = requests.get(url, params=params)
+        print(authorization_response.url)
         print(authorization_response.status_code)
 
     except requests.exceptions.RequestException as e:
@@ -53,6 +57,8 @@ def get_access_token():
 
 class SpotifyAPIManager:
     def __init__(self):
+        #self.authorizationManager = SpotifyAuthorizationManager()
+        
         self.authorization_info = get_user_authorization()
 
     def get_top_tracks(self):
