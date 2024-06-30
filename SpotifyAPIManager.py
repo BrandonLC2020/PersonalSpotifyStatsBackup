@@ -56,10 +56,10 @@ def get_access_token():
 
 
 class SpotifyAPIManager:
-    def __init__(self):
-        #self.authorizationManager = SpotifyAuthorizationManager()
-        
+    def __init__(self):        
+        #self.authorization_manager = SpotifyAuthorizationManager()
         self.authorization_info = get_user_authorization()
+        #self.authorization_manager.listen_for_authentication_call()
 
     def get_top_tracks(self):
         url = 'https://api.spotify.com/v1/me/top/tracks'
