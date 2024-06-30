@@ -16,7 +16,6 @@ class SpotifyAuthorizationManager:
             if not datachunk:
                 break  # no more data coming in, so break out of the while loop
             data.append(datachunk)  # add chunk to your already collected data
-
         conn.close()
         print(data)
 
