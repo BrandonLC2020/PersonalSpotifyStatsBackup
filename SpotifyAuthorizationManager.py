@@ -1,28 +1,47 @@
-import socket
+from http.server import BaseHTTPRequestHandler
+from urllib.parse import urlparse
+import json
 
-HOST = '127.0.0.1'  # Standard loopback interface address (localhost)
+class GetHandler(BaseHTTPRequestHandler):
 
-PORT = 3000        # Port to listen on (non-privileged ports are > 1023)
+    def do_GET(self):
+        print('came in here to GET')
+        parsed_path = urlparse(self.path)
+        message = '\n'.join([
+            'CLIENT VALUES:',
+            'client_address=%s (%s)' % (self.client_address,
+                self.address_string()),
+            'command=%s' % self.command,
+            'path=%s' % self.path,
+            'real path=%s' % parsed_path.path,
+            'query=%s' % parsed_path.query,
+            'request_version=%s' % self.request_version,
+            '',
+            'SERVER VALUES:',
+            'server_version=%s' % self.server_version,
+            'sys_version=%s' % self.sys_version,
+            'protocol_version=%s' % self.protocol_version,
+            '',
+            ])
+        # self.send_response(200)
+        # self.end_headers()
+        print(self.path)
+        return
 
-class SpotifyAuthorizationManager:
-    def main():
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
-        s.bind((HOST, PORT))
-        s.listen()
-        data = []
-        conn,address = s.accept()  # accept an incoming connection using accept() method which will block until a new client connects
-        while True:
-            datachunk = conn.recv(1024) # reads data chunk from the socket in batches using method recv() until it returns an empty string
-            if not datachunk:
-                break  # no more data coming in, so break out of the while loop
-            data.append(datachunk)  # add chunk to your already collected data
-        conn.close()
-        print(data)
+    def do_POST(self):
+        print('came in here to POST')        
+        content_len = int(self.headers.getheader('content-length'))
+        post_body = self.rfile.read(content_len)
+        self.send_response(200)
+        self.end_headers()
 
-    # def listen_for_authentication_call(self):
-    #     self.socket.accept()
-    #     print('made it here')
-        
-    if __name__ == '__main__':
-        main()
+        data = json.loads(post_body)
 
+        self.wfile.write(data['foo'])
+        return
+
+if __name__ == '__main__':
+    from http.server import HTTPServer
+    server = HTTPServer(('localhost', 3000), GetHandler)
+    print('Starting server at http://localhost:3000')
+    server.serve_forever()

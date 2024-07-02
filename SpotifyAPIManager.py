@@ -5,7 +5,7 @@ import random
 from urllib.parse import urlparse
 from urllib.parse import parse_qs
 from dotenv import load_dotenv
-from SpotifyAuthorizationManager import SpotifyAuthorizationManager
+#from SpotifyAuthorizationManager import SpotifyAuthorizationManager
 
 load_dotenv()
 CLIENT_ID = os.getenv('CLIENT_ID')
@@ -29,7 +29,8 @@ def get_user_authorization():
     try:
         authorization_response = requests.get(url, params=params)
         print(authorization_response.url)
-        print(authorization_response.status_code)
+        response = requests.get(authorization_response.url, allow_redirects=True)
+        print(response.history)
 
     except requests.exceptions.RequestException as e:
         print('Error:', e)
