@@ -2,10 +2,10 @@ import requests
 import os
 import string
 import random
-from urllib.parse import urlparse
-from urllib.parse import parse_qs
+from selenium import webdriver
+from selenium.webdriver.common.by import By
 from dotenv import load_dotenv
-#from SpotifyAuthorizationManager import SpotifyAuthorizationManager
+
 
 load_dotenv()
 CLIENT_ID = os.getenv('CLIENT_ID')
@@ -29,28 +29,16 @@ def get_user_authorization():
     try:
         authorization_response = requests.get(url, params=params)
         print(authorization_response.url)
-        response = requests.get(authorization_response.url, allow_redirects=True)
-        print(response.history)
+        driver = webdriver.Firefox()
 
-    except requests.exceptions.RequestException as e:
-        print('Error:', e)
-        return None
+        # Navigate to a webpage
+        driver.get(authorization_response.url)
 
-def get_access_token(): 
-    url = 'https://accounts.spotify.com/api/token'
-    headers = { 'Content-Type' : 'application/x-www-form-urlencoded' }
-    data = f"grant_type=client_credentials&client_id={CLIENT_ID}&client_secret={CLIENT_SECRET}"
-    try:
-        access_response = requests.post(url, data=data, headers=headers)
+        usernameText = driver.find_element(By.NAME, 'Email or username')
 
-        if access_response.status_code == 200:
-            access_json = access_response.json()
-            access_token = access_json['access_token']
-            access_token_type = access_json['token_type']
-            return access_token, access_token_type
-        else:
-            print('Error:', access_response.status_code)
-            return None
+        # Close the browser
+        #driver.quit()
+
     except requests.exceptions.RequestException as e:
         print('Error:', e)
         return None
@@ -58,9 +46,26 @@ def get_access_token():
 
 class SpotifyAPIManager:
     def __init__(self):        
-        #self.authorization_manager = SpotifyAuthorizationManager()
         self.authorization_info = get_user_authorization()
-        #self.authorization_manager.listen_for_authentication_call()
+
+    def get_access_token(self): 
+        url = 'https://accounts.spotify.com/api/token'
+        headers = { 'Content-Type' : 'application/x-www-form-urlencoded' }
+        data = f"grant_type=client_credentials&client_id={CLIENT_ID}&client_secret={CLIENT_SECRET}"
+        try:
+            access_response = requests.post(url, data=data, headers=headers)
+
+            if access_response.status_code == 200:
+                access_json = access_response.json()
+                access_token = access_json['access_token']
+                access_token_type = access_json['token_type']
+                return access_token, access_token_type
+            else:
+                print('Error:', access_response.status_code)
+                return None
+        except requests.exceptions.RequestException as e:
+            print('Error:', e)
+            return None
 
     def get_top_tracks(self):
         url = 'https://api.spotify.com/v1/me/top/tracks'

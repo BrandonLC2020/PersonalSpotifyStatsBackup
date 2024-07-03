@@ -5,6 +5,7 @@
 
 # Private files
 *.env
+authorization.txt
 
 # User-specific files
 *.rsuser
