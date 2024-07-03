@@ -11,6 +11,8 @@ load_dotenv()
 CLIENT_ID = os.getenv('CLIENT_ID')
 CLIENT_SECRET = os.getenv('CLIENT_SECRET')
 REDIRECT_URI = os.getenv('REDIRECT_URI_LOCAL')
+SPOTIFY_USERNAME = os.getenv('SPOTIFY_USERNAME')
+SPOTIFY_PASSWORD = os.getenv('SPOTIFY_PASSWORD')
 
 def generate_random_string(length):
     letters = string.ascii_letters
@@ -35,6 +37,7 @@ def get_user_authorization():
         driver.get(authorization_response.url)
 
         usernameText = driver.find_element(By.NAME, 'Email or username')
+        passwordText = driver.find_element(By.NAME, 'Password')
 
         # Close the browser
         #driver.quit()
