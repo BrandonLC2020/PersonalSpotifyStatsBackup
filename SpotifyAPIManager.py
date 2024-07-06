@@ -33,14 +33,23 @@ def get_user_authorization():
         print(authorization_response.url)
         driver = webdriver.Firefox()
 
-        # Navigate to a webpage
         driver.get(authorization_response.url)
-
-        usernameTextField = driver.find_element(By.NAME, 'Email or username')
-        passwordTextField = driver.find_element(By.NAME, 'Password')
-
-        # Close the browser
-        #driver.quit()
+        if driver.title == 'Login - Spotify':
+            username_text_field = driver.find_element(By.ID, 'login-username')
+            username_text_field.send_keys(SPOTIFY_USERNAME)
+            password_text_field = driver.find_element(By.ID, 'login-password')
+            password_text_field.send_keys(SPOTIFY_PASSWORD)
+            enter_credentials_link = driver.find_element(By.ID, 'login-button')
+            enter_credentials_link.click()
+            timeDelay = 0
+            while (driver.title == 'Login - Spotify'):
+                timeDelay += 1
+            while driver.title == 'Spotify':
+                timeDelay += 1
+            driver.implicitly_wait(2)
+            visit_site_button = driver.find_element(By.CSS_SELECTOR, 'button.ring-blue-600\/20')
+            visit_site_button.click()
+        driver.quit()
 
     except requests.exceptions.RequestException as e:
         print('Error:', e)
