@@ -1,5 +1,6 @@
 import requests
 import os
+import time
 import string
 import random
 from selenium import webdriver
@@ -19,10 +20,10 @@ def generate_random_string(length):
     random_string = ''.join(random.choice(letters) for i in range(length))
     return random_string
 
-def get_user_authorization():
+def get_user_authorization(state):
     url = 'https://accounts.spotify.com/authorize'
     params = {
-        'state' : generate_random_string(16),
+        'state' : state,
         'scope' : 'user-read-private user-read-email user-top-read',
         'response_type' : 'code',
         'redirect_uri' : REDIRECT_URI,
@@ -54,11 +55,31 @@ def get_user_authorization():
     except requests.exceptions.RequestException as e:
         print('Error:', e)
         return None
+    
+class SpotifyAPIManager():
+    def __init__(self):     
+        self.state = generate_random_string(16)
+        self.auth_code = ''
+        self.access_token = ''
+        get_user_authorization(self.state)
+        file_path = 'authorization.txt'
 
+        while not os.path.exists(file_path):
+            time.sleep(1)
 
-class SpotifyAPIManager:
-    def __init__(self):        
-        self.authorization_info = get_user_authorization()
+        if os.path.isfile(file_path):
+            authorization_file = open(file_path, 'r')
+            authorization_info = authorization_file.readline()
+            authorization_info_list = authorization_info.split(' ')
+            self.auth_code = authorization_info_list[0]
+            state_returned = authorization_info_list[1]
+            if state_returned != self.state:
+                return
+            else:
+                os.remove(file_path)
+            self.access_token = self.get_access_token()
+        else:
+            raise ValueError("%s isn't a file!" % file_path)
 
     def get_access_token(self): 
         url = 'https://accounts.spotify.com/api/token'
