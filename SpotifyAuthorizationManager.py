@@ -6,7 +6,6 @@ class GetHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         print(self.path)
         if 'code=' in self.path and 'state=' in self.path:
-            # get code and state
             parsed_url = urlparse(self.path)
             query_params = parse_qs(parsed_url.query)
             code = query_params['code'][0]

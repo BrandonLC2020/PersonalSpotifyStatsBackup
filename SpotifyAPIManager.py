@@ -120,8 +120,10 @@ class SpotifyAPIManager():
             'limit' : '50',
             'offset' : '0'
         } 
-        headers = { 'Authorization' : f"{self.token_type} {self.access_token}",
-                   "Content-Type": "application/json" }
+        headers = { 
+            'Authorization' : f"{self.token_type} {self.access_token}",
+            'Content-Type': 'application/json' 
+        }
         try:
             top_tracks_response = requests.get(url, headers=headers, params=params)
 
@@ -137,7 +139,10 @@ class SpotifyAPIManager():
 
     def get_top_artists(self):
         url = 'https://api.spotify.com/v1/me/top/artists?time_range=short_term&limit=50&offset=0'
-        headers = { 'Authorization' : f"{self.token_type} {self.access_token}" }
+        headers = { 
+            'Authorization' : f"{self.token_type} {self.access_token}",
+            'Content-Type' : 'application/json' 
+        }
         try:
             top_artists_response = requests.get(url, headers=headers)
 
