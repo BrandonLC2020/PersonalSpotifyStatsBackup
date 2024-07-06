@@ -5,6 +5,7 @@ import string
 import random
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+import base64
 from dotenv import load_dotenv
 
 
@@ -61,6 +62,7 @@ class SpotifyAPIManager():
         self.state = generate_random_string(16)
         self.auth_code = ''
         self.access_token = ''
+        self.token_type = ''
         get_user_authorization(self.state)
         file_path = 'authorization.txt'
 
@@ -77,22 +79,33 @@ class SpotifyAPIManager():
                 return
             else:
                 os.remove(file_path)
-            self.access_token = self.get_access_token()
+            self.get_access_token(self.auth_code)
         else:
             raise ValueError("%s isn't a file!" % file_path)
 
-    def get_access_token(self): 
+    def get_access_token(self, code): 
         url = 'https://accounts.spotify.com/api/token'
-        headers = { 'Content-Type' : 'application/x-www-form-urlencoded' }
-        data = f"grant_type=client_credentials&client_id={CLIENT_ID}&client_secret={CLIENT_SECRET}"
+        client_string = f"{CLIENT_ID}:{CLIENT_SECRET}"
+        client_string_bytes = client_string.encode("ascii") 
+        
+        base64_bytes = base64.b64encode(client_string_bytes) 
+        base64_string = base64_bytes.decode("ascii") 
+        headers = { 
+            'Authorization' : 'Basic ' + base64_string,
+            'Content-Type' : 'application/x-www-form-urlencoded' 
+        }
+        params = {
+            'grant_type' : 'authorization_code',
+            'redirect_uri' : REDIRECT_URI,
+            'code' : code
+        } 
         try:
-            access_response = requests.post(url, data=data, headers=headers)
+            access_response = requests.post(url, params=params, headers=headers)
 
             if access_response.status_code == 200:
                 access_json = access_response.json()
-                access_token = access_json['access_token']
-                access_token_type = access_json['token_type']
-                return access_token, access_token_type
+                self.access_token = access_json['access_token']
+                self.token_type = access_json['token_type']
             else:
                 print('Error:', access_response.status_code)
                 return None
