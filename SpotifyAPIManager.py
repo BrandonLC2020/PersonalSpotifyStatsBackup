@@ -36,8 +36,8 @@ def get_user_authorization():
         # Navigate to a webpage
         driver.get(authorization_response.url)
 
-        usernameText = driver.find_element(By.NAME, 'Email or username')
-        passwordText = driver.find_element(By.NAME, 'Password')
+        usernameTextField = driver.find_element(By.NAME, 'Email or username')
+        passwordTextField = driver.find_element(By.NAME, 'Password')
 
         # Close the browser
         #driver.quit()
