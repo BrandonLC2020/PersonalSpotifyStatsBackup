@@ -138,13 +138,18 @@ class SpotifyAPIManager():
             return None
 
     def get_top_artists(self):
-        url = 'https://api.spotify.com/v1/me/top/artists?time_range=short_term&limit=50&offset=0'
+        url = 'https://api.spotify.com/v1/me/top/artists'
         headers = { 
             'Authorization' : f"{self.token_type} {self.access_token}",
             'Content-Type' : 'application/json' 
         }
+        params = {
+            'time_range' : 'short_term',
+            'limit' : '50',
+            'offset' : '0'
+        } 
         try:
-            top_artists_response = requests.get(url, headers=headers)
+            top_artists_response = requests.get(url, headers=headers, params=params)
 
             if top_artists_response.status_code == 200:
                 top_artists_json = top_artists_response.json()
@@ -158,8 +163,31 @@ class SpotifyAPIManager():
     
     def get_tracks_audio_features(self, track_ids): #track_ids is a list of strings
         track_ids_str = ','.join(track_ids)
-        url = f"https://api.spotify.com/v1/audio-features?ids={track_ids_str}"
-        headers = { 'Authorization' : f"{self.token_type} {self.access_token}" }
+        url = f"https://api.spotify.com/v1/audio-features"
+        params = { 'ids': track_ids_str }
+        headers = { 
+            'Authorization' : f"{self.token_type} {self.access_token}",
+            'Content-Type' : 'application/json'  
+        }
+        try:
+            tracks_audio_features_response = requests.get(url, headers=headers, params=params)
+
+            if tracks_audio_features_response.status_code == 200:
+                tracks_audio_features_json = tracks_audio_features_response.json()
+                return tracks_audio_features_json
+            else:
+                print('Error:', tracks_audio_features_response.status_code)
+                return None
+        except requests.exceptions.RequestException as e:
+            print('Error:', e)
+            return None
+        
+    def get_tracks_audio_analysis(self, track_id):
+        url = f"https://api.spotify.com/v1/audio-analysis/{track_id}"
+        headers = { 
+            'Authorization' : f"{self.token_type} {self.access_token}",
+            'Content-Type' : 'application/json'  
+        }
         try:
             tracks_audio_features_response = requests.get(url, headers=headers)
 
@@ -171,4 +199,4 @@ class SpotifyAPIManager():
                 return None
         except requests.exceptions.RequestException as e:
             print('Error:', e)
-            return None 
+            return None  
