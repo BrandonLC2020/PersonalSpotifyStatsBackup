@@ -8,6 +8,9 @@ from selenium.webdriver.common.by import By
 import base64
 from dotenv import load_dotenv
 
+from Artist import Artist
+from Track import Track
+
 
 load_dotenv()
 CLIENT_ID = os.getenv('CLIENT_ID')
@@ -129,6 +132,14 @@ class SpotifyAPIManager():
 
             if top_tracks_response.status_code == 200:
                 top_tracks_json = top_tracks_response.json()
+                top_tracks_list = []
+                for track in top_tracks_json['items']:
+                    artists = []
+                    for artist in track['artists']:
+                        artists.append(Artist(name=artist['name'], artist_id=artist['id']))
+                    top_tracks_list.append(Track(name=track['name'], track_id=track['id'], 
+                        duration=track['duration_ms'], explicit=track['explicit'], disc_number=track['disc_number'], 
+                        track_number=track['track_number'], artists=artists))
                 return top_tracks_json
             else:
                 print('Error:', top_tracks_response.status_code)
