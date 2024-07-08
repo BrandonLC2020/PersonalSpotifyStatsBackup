@@ -26,42 +26,6 @@ def generate_random_string(length):
     letters = string.ascii_letters
     random_string = ''.join(random.choice(letters) for i in range(length))
     return random_string
-
-def get_user_authorization(state):
-    url = 'https://accounts.spotify.com/authorize'
-    params = {
-        'state' : state,
-        'scope' : 'user-read-private user-read-email user-top-read',
-        'response_type' : 'code',
-        'redirect_uri' : REDIRECT_URI,
-        'client_id' : CLIENT_ID
-    }
-    try:
-        authorization_response = requests.get(url, params=params)
-        print(authorization_response.url)
-        driver = webdriver.Firefox()
-
-        driver.get(authorization_response.url)
-        if driver.title == 'Login - Spotify':
-            username_text_field = driver.find_element(By.ID, 'login-username')
-            username_text_field.send_keys(SPOTIFY_USERNAME)
-            password_text_field = driver.find_element(By.ID, 'login-password')
-            password_text_field.send_keys(SPOTIFY_PASSWORD)
-            enter_credentials_link = driver.find_element(By.ID, 'login-button')
-            enter_credentials_link.click()
-            timeDelay = 0
-            while (driver.title == 'Login - Spotify'):
-                timeDelay += 1
-            while driver.title == 'Spotify':
-                timeDelay += 1
-            driver.implicitly_wait(2)
-            visit_site_button = driver.find_element(By.CSS_SELECTOR, 'button.ring-blue-600\/20')
-            visit_site_button.click()
-        driver.quit()
-
-    except requests.exceptions.RequestException as e:
-        print('Error:', e)
-        return None
     
 class SpotifyAPIManager():
     def __init__(self):     
@@ -69,7 +33,7 @@ class SpotifyAPIManager():
         self.auth_code = ''
         self.access_token = ''
         self.token_type = ''
-        get_user_authorization(self.state)
+        self.get_user_authorization(self.state)
         file_path = 'authorization.txt'
 
         while not os.path.exists(file_path):
@@ -88,6 +52,42 @@ class SpotifyAPIManager():
                 self.get_access_token(self.auth_code)
         else:
             raise ValueError("%s isn't a file!" % file_path)
+        
+    def get_user_authorization(self, state):
+        url = 'https://accounts.spotify.com/authorize'
+        params = {
+            'state' : state,
+            'scope' : 'user-read-private user-read-email user-top-read',
+            'response_type' : 'code',
+            'redirect_uri' : REDIRECT_URI,
+            'client_id' : CLIENT_ID
+        }
+        try:
+            authorization_response = requests.get(url, params=params)
+            print(authorization_response.url)
+            driver = webdriver.Firefox()
+
+            driver.get(authorization_response.url)
+            if driver.title == 'Login - Spotify':
+                username_text_field = driver.find_element(By.ID, 'login-username')
+                username_text_field.send_keys(SPOTIFY_USERNAME)
+                password_text_field = driver.find_element(By.ID, 'login-password')
+                password_text_field.send_keys(SPOTIFY_PASSWORD)
+                enter_credentials_link = driver.find_element(By.ID, 'login-button')
+                enter_credentials_link.click()
+                timeDelay = 0
+                while (driver.title == 'Login - Spotify'):
+                    timeDelay += 1
+                while driver.title == 'Spotify':
+                    timeDelay += 1
+                driver.implicitly_wait(2)
+                visit_site_button = driver.find_element(By.CSS_SELECTOR, 'button.ring-blue-600\/20')
+                visit_site_button.click()
+            driver.quit()
+
+        except requests.exceptions.RequestException as e:
+            print('Error:', e)
+            return None
 
     def get_access_token(self, code): 
         url = 'https://accounts.spotify.com/api/token'
