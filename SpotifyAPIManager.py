@@ -21,15 +21,10 @@ CLIENT_SECRET = os.getenv('CLIENT_SECRET')
 REDIRECT_URI = os.getenv('REDIRECT_URI_LOCAL')
 SPOTIFY_USERNAME = os.getenv('SPOTIFY_USERNAME')
 SPOTIFY_PASSWORD = os.getenv('SPOTIFY_PASSWORD')
-
-def generate_random_string(length):
-    letters = string.ascii_letters
-    random_string = ''.join(random.choice(letters) for i in range(length))
-    return random_string
     
 class SpotifyAPIManager():
     def __init__(self):     
-        self.state = generate_random_string(16)
+        self.state = self.generate_random_state(16)
         self.auth_code = ''
         self.access_token = ''
         self.token_type = ''
@@ -52,6 +47,11 @@ class SpotifyAPIManager():
                 self.get_access_token(self.auth_code)
         else:
             raise ValueError("%s isn't a file!" % file_path)
+        
+    def generate_random_state(self, length):
+        letters = string.ascii_letters
+        random_string = ''.join(random.choice(letters) for i in range(length))
+        return random_string
         
     def get_user_authorization(self, state):
         url = 'https://accounts.spotify.com/authorize'
