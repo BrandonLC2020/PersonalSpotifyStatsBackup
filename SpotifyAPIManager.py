@@ -85,7 +85,7 @@ class SpotifyAPIManager():
                 return
             else:
                 os.remove(file_path)
-            self.get_access_token(self.auth_code)
+                self.get_access_token(self.auth_code)
         else:
             raise ValueError("%s isn't a file!" % file_path)
 
