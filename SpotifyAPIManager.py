@@ -64,9 +64,7 @@ class SpotifyAPIManager():
         }
         try:
             authorization_response = requests.get(url, params=params)
-            print(authorization_response.url)
             driver = webdriver.Firefox()
-
             driver.get(authorization_response.url)
             if driver.title == 'Login - Spotify':
                 username_text_field = driver.find_element(By.ID, 'login-username')
