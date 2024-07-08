@@ -8,7 +8,9 @@ from selenium.webdriver.common.by import By
 import base64
 from dotenv import load_dotenv
 
+from Album import Album
 from Artist import Artist
+from Image import Image
 from Track import Track
 
 
@@ -129,7 +131,6 @@ class SpotifyAPIManager():
         }
         try:
             top_tracks_response = requests.get(url, headers=headers, params=params)
-
             if top_tracks_response.status_code == 200:
                 top_tracks_json = top_tracks_response.json()
                 top_tracks_list = []
@@ -137,10 +138,19 @@ class SpotifyAPIManager():
                     artists = []
                     for artist in track['artists']:
                         artists.append(Artist(name=artist['name'], artist_id=artist['id']))
+                    album_images = []
+                    for image in track['album']['images']:
+                        album_images.append(Image(url=image['url'], height=image['height'], width=image['width']))
+                    album_artists = []
+                    for artist in track['album']['artists']:
+                        album_artists.append(Artist(name=artist['name'], artist_id=artist['id']))
+                    album = Album(name=track['album']['name'], album_id=track['album']['id'], 
+                        album_type=track['album']['album_type'], release_date=track['album']['release_date'], 
+                        images=album_images, artists=album_artists)
                     top_tracks_list.append(Track(name=track['name'], track_id=track['id'], 
                         duration=track['duration_ms'], explicit=track['explicit'], disc_number=track['disc_number'], 
-                        track_number=track['track_number'], artists=artists))
-                return top_tracks_json
+                        track_number=track['track_number'], artists=artists, album=album, popularity=track['popularity']))
+                return top_tracks_list
             else:
                 print('Error:', top_tracks_response.status_code)
                 return None
@@ -161,10 +171,19 @@ class SpotifyAPIManager():
         } 
         try:
             top_artists_response = requests.get(url, headers=headers, params=params)
-
             if top_artists_response.status_code == 200:
                 top_artists_json = top_artists_response.json()
-                return top_artists_json
+                top_artists_list = []
+                for artist in top_artists_json['items']:
+                    artist_images = []
+                    for image in artist['images']:
+                        artist_images.append(Image(url=image['url'], height=image['height'], width=image['width']))
+                    genres_list = []
+                    for genre in artist['genres']:
+                        genres_list.append(genre)
+                    top_artists_list.append(Artist(name=artist['name'], artist_id=artist['id'], genres=genres_list, 
+                        images=artist_images, popularity=artist['popularity']))
+                return top_artists_list
             else:
                 print('Error:', top_artists_response.status_code)
                 return None
@@ -193,8 +212,8 @@ class SpotifyAPIManager():
             print('Error:', e)
             return None
         
-    def get_tracks_audio_analysis(self, track_id):
-        url = f"https://api.spotify.com/v1/audio-analysis/{track_id}"
+    def get_tracks_audio_analysis(self, track_id): # track_id is a single string
+        url = f"https://api.spotify.com/v1/audio-features/{track_id}"
         headers = { 
             'Authorization' : f"{self.token_type} {self.access_token}",
             'Content-Type' : 'application/json'  
