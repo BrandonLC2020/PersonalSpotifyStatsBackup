@@ -12,6 +12,7 @@ from Album import Album
 from Artist import Artist
 from Image import Image
 from Track import Track
+from TrackFeatures import TrackFeatures
 
 
 load_dotenv()
@@ -147,9 +148,10 @@ class SpotifyAPIManager():
                     album = Album(name=track['album']['name'], album_id=track['album']['id'], 
                         album_type=track['album']['album_type'], release_date=track['album']['release_date'], 
                         images=album_images, artists=album_artists)
+                    track_features = self.get_track_audio_features(track['id'])
                     top_tracks_list.append(Track(name=track['name'], track_id=track['id'], 
                         duration=track['duration_ms'], explicit=track['explicit'], disc_number=track['disc_number'], 
-                        track_number=track['track_number'], artists=artists, album=album, popularity=track['popularity']))
+                        track_number=track['track_number'], artists=artists, album=album, popularity=track['popularity'], track_features=track_features))
                 return top_tracks_list
             else:
                 print('Error:', top_tracks_response.status_code)
@@ -212,7 +214,7 @@ class SpotifyAPIManager():
             print('Error:', e)
             return None
         
-    def get_tracks_audio_analysis(self, track_id): # track_id is a single string
+    def get_track_audio_features(self, track_id): # track_id is a single string
         url = f"https://api.spotify.com/v1/audio-features/{track_id}"
         headers = { 
             'Authorization' : f"{self.token_type} {self.access_token}",
@@ -223,7 +225,12 @@ class SpotifyAPIManager():
 
             if tracks_audio_features_response.status_code == 200:
                 tracks_audio_features_json = tracks_audio_features_response.json()
-                return tracks_audio_features_json
+                return TrackFeatures(acousticness=tracks_audio_features_json['acousticness'], 
+                    danceability=tracks_audio_features_json['danceability'], 
+                    energy=tracks_audio_features_json['energy'], instrumentalness=tracks_audio_features_json['instrumentalness'], 
+                    liveness=tracks_audio_features_json['liveness'], loudness=tracks_audio_features_json['loudness'], 
+                    speechiness=tracks_audio_features_json['speechiness'], tempo=tracks_audio_features_json['tempo'], 
+                    valence=tracks_audio_features_json['valence'])
             else:
                 print('Error:', tracks_audio_features_response.status_code)
                 return None
