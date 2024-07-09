@@ -190,27 +190,6 @@ class SpotifyAPIManager():
         except requests.exceptions.RequestException as e:
             print('Error:', e)
             return None 
-    
-    def get_tracks_audio_features(self, track_ids): #track_ids is a list of strings
-        track_ids_str = ','.join(track_ids)
-        url = f"https://api.spotify.com/v1/audio-features"
-        params = { 'ids': track_ids_str }
-        headers = { 
-            'Authorization' : f"{self.token_type} {self.access_token}",
-            'Content-Type' : 'application/json'  
-        }
-        try:
-            tracks_audio_features_response = requests.get(url, headers=headers, params=params)
-
-            if tracks_audio_features_response.status_code == 200:
-                tracks_audio_features_json = tracks_audio_features_response.json()
-                return tracks_audio_features_json
-            else:
-                print('Error:', tracks_audio_features_response.status_code)
-                return None
-        except requests.exceptions.RequestException as e:
-            print('Error:', e)
-            return None
         
     def get_track_audio_features(self, track_id): # track_id is a single string
         url = f"https://api.spotify.com/v1/audio-features/{track_id}"
