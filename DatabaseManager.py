@@ -2,6 +2,9 @@ import mysql.connector
 import os
 from dotenv import load_dotenv
 
+from MonthlyTopArtists import MonthlyTopArtists
+from MonthlyTopTracks import MonthlyTopTracks
+
 load_dotenv()
 DATABASE_HOST = os.getenv('DATABASE_HOST')
 DATABASE_USERNAME = os.getenv('DATABASE_USERNAME')
@@ -18,3 +21,9 @@ class DatabaseManager:
             database=DATABASE_DB
         )
         self.mycursor = self.mydb.cursor()
+    
+    def insert_top_tracks_into_db(self, top_tracks_of_the_month: MonthlyTopTracks):
+        pass
+
+    def insert_top_artists_into_db(self, top_artists_of_the_month: MonthlyTopArtists):
+        pass
