@@ -1,4 +1,4 @@
-import mysql.connector
+import pymongo
 import os
 from dotenv import load_dotenv
 
@@ -13,18 +13,10 @@ DATABASE_DB = os.getenv('DATABASE_DB')
 
 class DatabaseManager:
     def __init__(self):
-        self.mydb = mysql.connector.connect(
-            host=DATABASE_HOST,
-            user=DATABASE_USERNAME,
-            password=DATABASE_PASSWORD,
-            database=DATABASE_DB
-        )
-        self.mycursor = self.mydb.cursor()
+        pass
     
     def insert_top_tracks_into_db(self, top_tracks_of_the_month: MonthlyTopTracks):
-        val = []
-        for rank, track in top_tracks_of_the_month.top_tracks:
-            val.append((top_tracks_of_the_month.year, top_tracks_of_the_month.year, rank, track))
+        pass
 
     def insert_top_artists_into_db(self, top_artists_of_the_month: MonthlyTopArtists):
         pass
