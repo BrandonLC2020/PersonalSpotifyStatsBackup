@@ -1,6 +1,6 @@
 from DatabaseManager import DatabaseManager
-from MonthlyTopArtists import MonthlyTopArtists
-from MonthlyTopTracks import MonthlyTopTracks
+from Types.MonthlyTopArtists import MonthlyTopArtists
+from Types.MonthlyTopTracks import MonthlyTopTracks
 from SpotifyAPIManager import SpotifyAPIManager
 
 spotify_api_manager = SpotifyAPIManager()

@@ -8,11 +8,11 @@ from selenium.webdriver.common.by import By
 import base64
 from dotenv import load_dotenv
 
-from Album import Album
-from Artist import Artist
-from Image import Image
-from Track import Track
-from TrackFeatures import TrackFeatures
+from Types.Album import Album
+from Types.Artist import Artist
+from Types.Image import Image
+from Types.Track import Track
+from Types.TrackFeatures import TrackFeatures
 
 
 load_dotenv()

@@ -2,8 +2,8 @@ import mysql.connector
 import os
 from dotenv import load_dotenv
 
-from MonthlyTopArtists import MonthlyTopArtists
-from MonthlyTopTracks import MonthlyTopTracks
+from Types.MonthlyTopArtists import MonthlyTopArtists
+from Types.MonthlyTopTracks import MonthlyTopTracks
 
 load_dotenv()
 DATABASE_HOST = os.getenv('DATABASE_HOST')
