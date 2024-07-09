@@ -22,7 +22,9 @@ class DatabaseManager:
         self.mycursor = self.mydb.cursor()
     
     def insert_top_tracks_into_db(self, top_tracks_of_the_month: MonthlyTopTracks):
-        pass
+        val = []
+        for rank, track in top_tracks_of_the_month.top_tracks:
+            val.append((top_tracks_of_the_month.year, top_tracks_of_the_month.year, rank, track))
 
     def insert_top_artists_into_db(self, top_artists_of_the_month: MonthlyTopArtists):
         pass
