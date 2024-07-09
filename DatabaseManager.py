@@ -12,7 +12,6 @@ DATABASE_PASSWORD = os.getenv('DATABASE_PASSWORD')
 DATABASE_DB = os.getenv('DATABASE_DB')
 
 class DatabaseManager:
-
     def __init__(self):
         self.mydb = mysql.connector.connect(
             host=DATABASE_HOST,
