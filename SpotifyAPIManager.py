@@ -202,8 +202,7 @@ class SpotifyAPIManager():
 
             if tracks_audio_features_response.status_code == 200:
                 tracks_audio_features_json = tracks_audio_features_response.json()
-                return TrackFeatures(acousticness=tracks_audio_features_json['acousticness'], 
-                    danceability=tracks_audio_features_json['danceability'], 
+                return TrackFeatures(acousticness=tracks_audio_features_json['acousticness'], danceability=tracks_audio_features_json['danceability'], 
                     energy=tracks_audio_features_json['energy'], instrumentalness=tracks_audio_features_json['instrumentalness'], 
                     liveness=tracks_audio_features_json['liveness'], loudness=tracks_audio_features_json['loudness'], 
                     speechiness=tracks_audio_features_json['speechiness'], tempo=tracks_audio_features_json['tempo'], 
