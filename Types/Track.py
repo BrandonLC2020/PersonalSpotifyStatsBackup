@@ -1,3 +1,8 @@
+from Types.Album import Album
+from Types.Artist import Artist
+from Types.TrackFeatures import TrackFeatures
+
+
 class Track:
     def __init__(self, name, track_id, duration, explicit, disc_number, track_number, popularity, artists, album, track_features):
         self.name = name
@@ -7,6 +12,6 @@ class Track:
         self.disc_number = disc_number
         self.track_number = track_number
         self.popularity = popularity
-        self.album = album
-        self.artists = artists
-        self.track_features = track_features
+        self.album : Album = album 
+        self.artists : list[Artist] = artists
+        self.track_features : TrackFeatures = track_features
