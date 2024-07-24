@@ -1,5 +1,5 @@
 from Managers.DatabaseManager import DatabaseManager
-from Types import MonthlyTopAlbums
+from Types.MonthlyTopAlbums import MonthlyTopAlbums
 from Types.MonthlyTopArtists import MonthlyTopArtists
 from Types.MonthlyTopTracks import MonthlyTopTracks
 from Managers.SpotifyAPIManager import SpotifyAPIManager
