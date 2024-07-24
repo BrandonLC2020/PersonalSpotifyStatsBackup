@@ -3,7 +3,7 @@ from datetime import date, timedelta
 from Types.Artist import Artist
 
 class MonthlyTopArtists:
-    def __init__(self, top_artists):
+    def __init__(self, top_artists: list[Artist]):
         top_artists_dict = {}
         for artist in top_artists:
             top_artists_dict[top_artists.index(artist) + 1] = artist
