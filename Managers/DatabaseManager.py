@@ -3,29 +3,30 @@ import os
 from dotenv import load_dotenv
 import numpy as np
 
+from Types.MonthlyTopAlbums import MonthlyTopAlbums
 from Types.MonthlyTopArtists import MonthlyTopArtists
 from Types.MonthlyTopTracks import MonthlyTopTracks
 
 load_dotenv()
 DATABASE_HOST = os.getenv('DATABASE_HOST')
-DATABASE_USERNAME = os.getenv('DATABASE_USERNAME')
-DATABASE_PASSWORD = os.getenv('DATABASE_PASSWORD')
+DATABASE_CONNECTION_URL = os.getenv('DATABASE_CONNECTION_URL')
 DATABASE_DB = os.getenv('DATABASE_DB')
 
 class DatabaseManager:
     def __init__(self):
-        self.mongo_client = pymongo.MongoClient('CONNECTION URL')
-        self.db = self.mongo_client['DATABASE NAME']
-        self.track_collection = self.db['TRACK COL NAME']
-        self.artist_collection = self.db['ARTIST COL NAME']
+        self.mongo_client = pymongo.MongoClient(DATABASE_CONNECTION_URL)
+        self.db = self.mongo_client[DATABASE_DB]
+        self.track_collection = self.db['tracks']
+        self.artist_collection = self.db['artists']
+        self.album_collection = self.db['albums']
     
     def insert_top_tracks_into_db(self, top_tracks_of_the_month: MonthlyTopTracks):
-        song_list = []
+        track_list = []
         for rank, track in top_tracks_of_the_month.top_tracks.items():
             track_artists_list = []
             for artist in track.artists:
                 track_artists_list.append(artist.artist_id)
-            song_list.append({
+            track_list.append({
                 "month" : top_tracks_of_the_month.month,
                 "year" : top_tracks_of_the_month.year,
                 "rank" : rank,
@@ -48,7 +49,7 @@ class DatabaseManager:
                 "tempo" : track.track_features.tempo,
                 "valence" : track.track_features.valence
             })
-        self.track_collection.insert_many(song_list)
+        self.track_collection.insert_many(track_list)
 
 
     def insert_top_artists_into_db(self, top_artists_of_the_month: MonthlyTopArtists):
@@ -72,3 +73,27 @@ class DatabaseManager:
                 "images" : unique_images_array.tolist()
             })
         self.artist_collection.insert_many(artist_list)
+
+    def insert_top_albums_into_db(self, top_albums_of_the_month: MonthlyTopAlbums):
+        album_list = []
+        for rank, albums in top_albums_of_the_month.top_albums.items():
+            for album in albums:
+                images_list = []
+                for image in album.images:
+                    images_list.append(image.url)
+                unique_images_array = np.unique(np.array(images_list)) 
+                album_artists_list = []
+                for artist in album.artists:
+                    album_artists_list.append(artist.artist_id)
+                album_list.append({
+                    "month" : top_albums_of_the_month.month,
+                    "year" : top_albums_of_the_month.year,
+                    "rank" : rank,
+                    "name" : album.name,
+                    "album_id" : album.album_id,
+                    "album_type" : album.album_type,
+                    "release_date" : album.release_date,
+                    "images" : unique_images_array.tolist(),
+                    "artist_ids" : album_artists_list
+                })
+        self.album_collection.insert_many(album_list)
