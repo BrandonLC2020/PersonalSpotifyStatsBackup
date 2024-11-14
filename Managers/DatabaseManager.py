@@ -1,4 +1,4 @@
-import pymongo
+import pymongo as mongo
 import os
 from dotenv import load_dotenv
 import numpy as np
@@ -15,7 +15,7 @@ DATABASE_DB = os.getenv('DATABASE_DB')
 class DatabaseManager:
     def __init__(self):
         print(DATABASE_CONNECTION_URL)
-        self.mongo_client = pymongo.MongoClient(DATABASE_CONNECTION_URL)
+        self.mongo_client = mongo.MongoClient(DATABASE_CONNECTION_URL)
         self.db = self.mongo_client[DATABASE_DB]
         self.track_collection = self.db['tracks']
         self.artist_collection = self.db['artists']
