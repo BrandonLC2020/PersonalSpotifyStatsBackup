@@ -13,7 +13,7 @@ class MonthlyTopAlbums:
         prev = date.today().replace(day=1) - timedelta(days=1)
         self.month = prev.month
         self.year = prev.year
-        all_albums_list : list[Album ]= []
+        all_albums_list : list[Album] = []
         for track in top_tracks:
             all_albums_list.append(track.album)
         album_ids_and_counts : dict[str, int] = {}
