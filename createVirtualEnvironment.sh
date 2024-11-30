@@ -1,3 +1,3 @@
 #!/bin/bash
 
-python -m venv SpotifyStatsEnv
+python3 -m venv SpotifyStatsEnv
