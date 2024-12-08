@@ -5,6 +5,7 @@ if [ -f .env ]; then
     export $(grep -v '^#' .env | xargs)
 fi
 
+# Start virtual environment
 source SpotifyStatsEnv/bin/activate
 
 xterm -e python3 SpotifyAuthorizationManager.py
