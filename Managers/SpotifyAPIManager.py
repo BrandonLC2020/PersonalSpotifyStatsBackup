@@ -14,7 +14,6 @@ from Types.Image import Image
 from Types.Track import Track
 from Types.TrackFeatures import TrackFeatures
 
-
 load_dotenv()
 CLIENT_ID = os.getenv('CLIENT_ID')
 CLIENT_SECRET = os.getenv('CLIENT_SECRET')

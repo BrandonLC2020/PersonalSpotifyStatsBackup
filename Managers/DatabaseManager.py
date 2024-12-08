@@ -52,7 +52,6 @@ class DatabaseManager:
             })
         self.track_collection.insert_many(track_list)
 
-
     def insert_top_artists_into_db(self, top_artists_of_the_month: MonthlyTopArtists):
         artist_list = []
         for rank, artist in top_artists_of_the_month.top_artists.items():
