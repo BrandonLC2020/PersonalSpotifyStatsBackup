@@ -1,8 +1,12 @@
 from http.server import BaseHTTPRequestHandler
+import os
 from urllib.parse import urlparse, parse_qs
+from dotenv import load_dotenv
+
+load_dotenv()
+NGROK_PORT = os.getenv('NGROK_PORT')
 
 class GetHandler(BaseHTTPRequestHandler):
-
     def do_GET(self):
         print(self.path)
         if 'code=' in self.path and 'state=' in self.path:
@@ -19,6 +23,6 @@ class GetHandler(BaseHTTPRequestHandler):
 
 if __name__ == '__main__':
     from http.server import HTTPServer
-    server = HTTPServer(('localhost', 3000), GetHandler)
+    server = HTTPServer(('localhost', NGROK_PORT), GetHandler)
     print('Starting server at http://localhost:3000')
     server.serve_forever()
