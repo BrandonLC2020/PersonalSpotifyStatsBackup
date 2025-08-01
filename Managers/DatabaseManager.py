@@ -1,7 +1,7 @@
-import pymongo as mongo
+import mysql.connector
 import os
 from dotenv import load_dotenv
-import numpy as np
+import json
 
 from Types.MonthlyTopAlbums import MonthlyTopAlbums
 from Types.MonthlyTopArtists import MonthlyTopArtists
@@ -11,86 +11,84 @@ load_dotenv()
 
 class DatabaseManager:
     def __init__(self):
-        print(DATABASE_CONNECTION_URL)
-        self.mongo_client = mongo.MongoClient(DATABASE_CONNECTION_URL)
-        self.db = self.mongo_client[DATABASE_DB]
-        self.track_collection = self.db['tracks']
-        self.artist_collection = self.db['artists']
-        self.album_collection = self.db['albums']
-    
+        try:
+            self.db = mysql.connector.connect(
+                host=os.getenv('DB_HOST'),
+                user=os.getenv('DB_USER'),
+                password=os.getenv('DB_PASSWORD'),
+                database=os.getenv('DB_NAME')
+            )
+            self.cursor = self.db.cursor()
+            print("Successfully connected to MySQL database.")
+        except mysql.connector.Error as err:
+            print(f"Error: {err}")
+            exit()
+
     def insert_top_tracks_into_db(self, top_tracks_of_the_month: MonthlyTopTracks):
+        sql = """
+        INSERT INTO tracks (month, year, `rank`, name, track_id, duration_ms, is_explicit,
+        disc_number, track_number, popularity, album_id, artist_ids, acousticness, danceability,
+        energy, instrumentalness, liveness, loudness, speechiness, tempo, valence)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        ON DUPLICATE KEY UPDATE name=VALUES(name), popularity=VALUES(popularity);
+        """
         track_list = []
         for rank, track in top_tracks_of_the_month.top_tracks.items():
-            track_artists_list = []
-            for artist in track.artists:
-                track_artists_list.append(artist.artist_id)
-            track_list.append({
-                "month" : top_tracks_of_the_month.month,
-                "year" : top_tracks_of_the_month.year,
-                "rank" : rank,
-                "name" : track.name,
-                "track_id" : track.track_id,
-                "duration_ms" : track.duration, # in milliseconds
-                "is_explicit" : track.is_explicit,
-                "disc_number" : track.disc_number,
-                "track_number" : track.track_number,
-                "popularity" : track.popularity,
-                "album_id" : track.album.album_id,
-                "artist_ids" : track_artists_list,
-                "acousticness" : track.track_features.acousticness,
-                "danceability" : track.track_features.danceability,
-                "energy" : track.track_features.energy,
-                "instrumentalness" : track.track_features.instrumentalness,
-                "liveness" : track.track_features.liveness,
-                "loudness" : track.track_features.loudness,
-                "speechiness" : track.track_features.speechiness,
-                "tempo" : track.track_features.tempo,
-                "valence" : track.track_features.valence
-            })
-        self.track_collection.insert_many(track_list)
+            artist_ids = json.dumps([artist.artist_id for artist in track.artists])
+            track_data = (
+                top_tracks_of_the_month.month, top_tracks_of_the_month.year, rank,
+                track.name, track.track_id, track.duration, track.is_explicit,
+                track.disc_number, track.track_number, track.popularity,
+                track.album.album_id, artist_ids, track.track_features.acousticness,
+                track.track_features.danceability, track.track_features.energy,
+                track.track_features.instrumentalness, track.track_features.liveness,
+                track.track_features.loudness, track.track_features.speechiness,
+                track.track_features.tempo, track.track_features.valence
+            )
+            track_list.append(track_data)
+
+        self.cursor.executemany(sql, track_list)
+        self.db.commit()
+        print(f"{self.cursor.rowcount} tracks inserted/updated.")
 
     def insert_top_artists_into_db(self, top_artists_of_the_month: MonthlyTopArtists):
+        sql = """
+        INSERT INTO artists (month, year, `rank`, name, artist_id, popularity, genres, images)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        ON DUPLICATE KEY UPDATE name=VALUES(name), popularity=VALUES(popularity);
+        """
         artist_list = []
         for rank, artist in top_artists_of_the_month.top_artists.items():
-            genres_list = []
-            for genre in artist.genres:
-                genres_list.append(genre)
-            images_list = []
-            for image in artist.images:
-                images_list.append(image.url)
-            unique_images_array = np.unique(np.array(images_list))
-            artist_list.append({
-                "month" : top_artists_of_the_month.month,
-                "year" : top_artists_of_the_month.year,
-                "rank" : rank,
-                "name" : artist.name,
-                "artist_id" : artist.artist_id,
-                "popularity" : artist.popularity,
-                "genres" : genres_list,
-                "images" : unique_images_array.tolist()
-            })
-        self.artist_collection.insert_many(artist_list)
+            genres_list = json.dumps(artist.genres)
+            images_list = json.dumps([image.url for image in artist.images])
+            artist_data = (
+                top_artists_of_the_month.month, top_artists_of_the_month.year, rank,
+                artist.name, artist.artist_id, artist.popularity, genres_list, images_list
+            )
+            artist_list.append(artist_data)
+
+        self.cursor.executemany(sql, artist_list)
+        self.db.commit()
+        print(f"{self.cursor.rowcount} artists inserted/updated.")
 
     def insert_top_albums_into_db(self, top_albums_of_the_month: MonthlyTopAlbums):
+        sql = """
+        INSERT INTO albums (month, year, `rank`, name, album_id, album_type, release_date, images, artist_ids)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        ON DUPLICATE KEY UPDATE name=VALUES(name);
+        """
         album_list = []
         for rank, albums in top_albums_of_the_month.top_albums.items():
             for album in albums:
-                images_list = []
-                for image in album.images:
-                    images_list.append(image.url)
-                unique_images_array = np.unique(np.array(images_list)) 
-                album_artists_list = []
-                for artist in album.artists:
-                    album_artists_list.append(artist.artist_id)
-                album_list.append({
-                    "month" : top_albums_of_the_month.month,
-                    "year" : top_albums_of_the_month.year,
-                    "rank" : rank,
-                    "name" : album.name,
-                    "album_id" : album.album_id,
-                    "album_type" : album.album_type,
-                    "release_date" : album.release_date,
-                    "images" : unique_images_array.tolist(),
-                    "artist_ids" : album_artists_list
-                })
-        self.album_collection.insert_many(album_list)
+                images_list = json.dumps([image.url for image in album.images])
+                artist_ids = json.dumps([artist.artist_id for artist in album.artists])
+                album_data = (
+                    top_albums_of_the_month.month, top_albums_of_the_month.year, rank,
+                    album.name, album.album_id, album.album_type, album.release_date,
+                    images_list, artist_ids
+                )
+                album_list.append(album_data)
+
+        self.cursor.executemany(sql, album_list)
+        self.db.commit()
+        print(f"{self.cursor.rowcount} albums inserted/updated.")

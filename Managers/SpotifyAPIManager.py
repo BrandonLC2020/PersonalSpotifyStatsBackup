@@ -1,11 +1,12 @@
+import json
 import requests
 import os
 import time
 import string
 import random
-from selenium import webdriver
-from selenium.webdriver.common.by import By
 import base64
+import boto3
+from botocore.exceptions import ClientError
 from dotenv import load_dotenv
 
 from Types.Album import Album
@@ -26,52 +27,16 @@ class SpotifyAPIManager():
         self.access_token = ''
         self.token_type = ''
         self.refresh_token = ''
-        self.get_user_authorization(self.state)
-        file_path = 'authorization.txt'
-
-        while not os.path.exists(file_path):
-            time.sleep(1)
-
-        if os.path.isfile(file_path):
-            authorization_file = open(file_path, 'r')
-            authorization_info = authorization_file.readline()
-            authorization_info_list = authorization_info.split(' ')
-            self.auth_code = authorization_info_list[0]
-            state_returned = authorization_info_list[1]
-            if state_returned != self.state:
-                return
-            else:
-                os.remove(file_path)
-                self.get_access_token(self.auth_code)
-        else:
-            raise ValueError("%s isn't a file!" % file_path)
+        self.secrets_client = boto3.client("secretsmanager")
+        self.secret_name = os.getenv('SECRET_NAME')
+        self.refresh_token = self.get_secret()
+        self.get_access_token_from_refresh_token()
         
     def generate_random_state(self, length):
         letters = string.ascii_letters
         random_string = ''.join(random.choice(letters) for i in range(length))
         return random_string
         
-    def get_user_authorization(self, state):
-        url = 'https://accounts.spotify.com/authorize'
-        params = {
-            'state' : state,
-            'scope' : 'user-read-private user-read-email user-top-read',
-            'response_type' : 'code',
-            'redirect_uri' : REDIRECT_URI,
-            'client_id' : CLIENT_ID
-        }
-        try:
-            authorization_response = requests.get(url, params=params)
-            if authorization_response.status_code == 200:
-                authorization_url = authorization_response.url
-                print(f"Please open the following URL in your browser to authorize the application:\n{authorization_url}")
-            else:
-                print('Error:', authorization_response.status_code)
-                return None
-
-        except requests.exceptions.RequestException as e:
-            print('Error:', e)
-            return None
 
     def get_access_token(self, code): 
         url = 'https://accounts.spotify.com/api/token'
@@ -97,6 +62,59 @@ class SpotifyAPIManager():
                 self.access_token = access_json['access_token']
                 self.token_type = access_json['token_type']
                 self.refresh_token = access_json['refresh_token']
+                print(self.refresh_token)
+            else:
+                print('Error:', access_response.status_code)
+                return None
+        except requests.exceptions.RequestException as e:
+            print('Error:', e)
+            return None
+        
+    def get_secret(self):
+        try:
+            response = self.secrets_client.get_secret_value(SecretId=self.secret_name)
+            secret = json.loads(response['SecretString'])
+            return secret.get('spotify_refresh_token')
+        except Exception as e:
+            print(f"Error retrieving secret: {e}")
+            return None
+        
+    def update_secret(self, new_token):
+        try:
+            self.secrets_client.update_secret(
+                SecretId=self.secret_name,
+                SecretString=json.dumps({'spotify_refresh_token': new_token})
+            )
+            print("Secret updated successfully.")
+        except Exception as e:
+            print(f"Error updating secret: {e}")
+        
+    def get_access_token_from_refresh_token(self): 
+        url = 'https://accounts.spotify.com/api/token'
+        client_string = f"{CLIENT_ID}:{CLIENT_SECRET}"
+        client_string_bytes = client_string.encode("ascii") 
+        
+        base64_bytes = base64.b64encode(client_string_bytes) 
+        base64_string = base64_bytes.decode("ascii") 
+        headers = { 
+            'Authorization' : 'Basic ' + base64_string,
+            'Content-Type' : 'application/x-www-form-urlencoded' 
+        }
+        params = {
+            'grant_type' : 'refresh_token',
+            'redirect_uri' : REDIRECT_URI,
+            'refresh_token' : self.get_secret()
+        } 
+        try:
+            access_response = requests.post(url, params=params, headers=headers)
+
+            if access_response.status_code == 200:
+                access_json = access_response.json()
+                self.access_token = access_json['access_token']
+                self.token_type = access_json['token_type']
+                if 'refresh_token' in access_json:
+                    self.refresh_token = access_json['refresh_token']
+                    self.update_secret(self.refresh_token)
                 print(self.refresh_token)
             else:
                 print('Error:', access_response.status_code)
