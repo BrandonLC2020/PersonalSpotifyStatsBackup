@@ -8,9 +8,6 @@ from Types.MonthlyTopArtists import MonthlyTopArtists
 from Types.MonthlyTopTracks import MonthlyTopTracks
 
 load_dotenv()
-DATABASE_HOST = os.getenv('DATABASE_HOST')
-DATABASE_CONNECTION_URL = os.getenv('DATABASE_CONNECTION_URL')
-DATABASE_DB = os.getenv('DATABASE_DB')
 
 class DatabaseManager:
     def __init__(self):

@@ -17,9 +17,7 @@ from Types.TrackFeatures import TrackFeatures
 load_dotenv()
 CLIENT_ID = os.getenv('CLIENT_ID')
 CLIENT_SECRET = os.getenv('CLIENT_SECRET')
-REDIRECT_URI = os.getenv('REDIRECT_URI_LOCAL')
-SPOTIFY_USERNAME = os.getenv('SPOTIFY_USERNAME')
-SPOTIFY_PASSWORD = os.getenv('SPOTIFY_PASSWORD')
+REDIRECT_URI = os.getenv('REDIRECT_URI')
     
 class SpotifyAPIManager():
     def __init__(self):     
@@ -27,6 +25,7 @@ class SpotifyAPIManager():
         self.auth_code = ''
         self.access_token = ''
         self.token_type = ''
+        self.refresh_token = ''
         self.get_user_authorization(self.state)
         file_path = 'authorization.txt'
 
@@ -63,24 +62,12 @@ class SpotifyAPIManager():
         }
         try:
             authorization_response = requests.get(url, params=params)
-            driver = webdriver.Firefox()
-            driver.get(authorization_response.url)
-            if driver.title == 'Login - Spotify':
-                username_text_field = driver.find_element(By.ID, 'login-username')
-                username_text_field.send_keys(SPOTIFY_USERNAME)
-                password_text_field = driver.find_element(By.ID, 'login-password')
-                password_text_field.send_keys(SPOTIFY_PASSWORD)
-                enter_credentials_link = driver.find_element(By.ID, 'login-button')
-                enter_credentials_link.click()
-                timeDelay = 0
-                while (driver.title == 'Login - Spotify'):
-                    timeDelay += 1
-                while driver.title == 'Spotify':
-                    timeDelay += 1
-                driver.implicitly_wait(2)
-                visit_site_button = driver.find_element(By.CSS_SELECTOR, 'button.ring-blue-600\/20')
-                visit_site_button.click()
-            driver.quit()
+            if authorization_response.status_code == 200:
+                authorization_url = authorization_response.url
+                print(f"Please open the following URL in your browser to authorize the application:\n{authorization_url}")
+            else:
+                print('Error:', authorization_response.status_code)
+                return None
 
         except requests.exceptions.RequestException as e:
             print('Error:', e)
@@ -109,6 +96,8 @@ class SpotifyAPIManager():
                 access_json = access_response.json()
                 self.access_token = access_json['access_token']
                 self.token_type = access_json['token_type']
+                self.refresh_token = access_json['refresh_token']
+                print(self.refresh_token)
             else:
                 print('Error:', access_response.status_code)
                 return None
