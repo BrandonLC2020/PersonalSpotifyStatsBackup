@@ -13,7 +13,6 @@ from Types.Album import Album
 from Types.Artist import Artist
 from Types.Image import Image
 from Types.Track import Track
-from Types.TrackFeatures import TrackFeatures
 
 load_dotenv()
 CLIENT_ID = os.getenv('CLIENT_ID')
@@ -30,7 +29,9 @@ class SpotifyAPIManager():
         self.secrets_client = boto3.client("secretsmanager")
         self.secret_name = os.getenv('SECRET_NAME')
         self.refresh_token = self.get_secret()
+        print(f"--> DEBUG: Pulled this refresh token from AWS: {self.refresh_token}") # <-- ADD THIS LINE
         self.get_access_token_from_refresh_token()
+
         
     def generate_random_state(self, length):
         letters = string.ascii_letters
@@ -96,6 +97,10 @@ class SpotifyAPIManager():
         
         base64_bytes = base64.b64encode(client_string_bytes) 
         base64_string = base64_bytes.decode("ascii") 
+        refresh_token_string = self.get_secret()
+        if not refresh_token_string:
+            print("No refresh token found. Please authenticate first.")
+            return None
         headers = { 
             'Authorization' : 'Basic ' + base64_string,
             'Content-Type' : 'application/x-www-form-urlencoded' 
@@ -103,7 +108,7 @@ class SpotifyAPIManager():
         params = {
             'grant_type' : 'refresh_token',
             'redirect_uri' : REDIRECT_URI,
-            'refresh_token' : self.get_secret()
+            'refresh_token' : self.refresh_token
         } 
         try:
             access_response = requests.post(url, params=params, headers=headers)
@@ -115,7 +120,6 @@ class SpotifyAPIManager():
                 if 'refresh_token' in access_json:
                     self.refresh_token = access_json['refresh_token']
                     self.update_secret(self.refresh_token)
-                print(self.refresh_token)
             else:
                 print('Error:', access_response.status_code)
                 return None
@@ -152,16 +156,15 @@ class SpotifyAPIManager():
                     album = Album(name=track['album']['name'], album_id=track['album']['id'], 
                         album_type=track['album']['album_type'], release_date=track['album']['release_date'], 
                         images=album_images, artists=album_artists)
-                    track_features = self.get_track_audio_features(track['id'])
                     top_tracks_list.append(Track(name=track['name'], track_id=track['id'], 
                         duration=track['duration_ms'], explicit=track['explicit'], disc_number=track['disc_number'], 
-                        track_number=track['track_number'], artists=artists, album=album, popularity=track['popularity'], track_features=track_features))
+                        track_number=track['track_number'], artists=artists, album=album, popularity=track['popularity']))
                 return top_tracks_list
             else:
-                print('Error:', top_tracks_response.status_code)
+                print('Spotify API Error:', top_tracks_response.status_code)
                 return None
         except requests.exceptions.RequestException as e:
-            print('Error:', e)
+            print('Spotify API Error:', e)
             return None
 
     def get_top_artists(self):
@@ -191,31 +194,9 @@ class SpotifyAPIManager():
                         images=artist_images, popularity=artist['popularity']))
                 return top_artists_list
             else:
-                print('Error:', top_artists_response.status_code)
+                print('Spotify API Error:', top_artists_response.status_code)
                 return None
         except requests.exceptions.RequestException as e:
-            print('Error:', e)
+            print('Spotify API Error:', e)
             return None 
         
-    def get_track_audio_features(self, track_id): # track_id is a single string
-        url = f"https://api.spotify.com/v1/audio-features/{track_id}"
-        headers = { 
-            'Authorization' : f"{self.token_type} {self.access_token}",
-            'Content-Type' : 'application/json'  
-        }
-        try:
-            tracks_audio_features_response = requests.get(url, headers=headers)
-
-            if tracks_audio_features_response.status_code == 200:
-                tracks_audio_features_json = tracks_audio_features_response.json()
-                return TrackFeatures(acousticness=tracks_audio_features_json['acousticness'], danceability=tracks_audio_features_json['danceability'], 
-                    energy=tracks_audio_features_json['energy'], instrumentalness=tracks_audio_features_json['instrumentalness'], 
-                    liveness=tracks_audio_features_json['liveness'], loudness=tracks_audio_features_json['loudness'], 
-                    speechiness=tracks_audio_features_json['speechiness'], tempo=tracks_audio_features_json['tempo'], 
-                    valence=tracks_audio_features_json['valence'])
-            else:
-                print('Error:', tracks_audio_features_response.status_code)
-                return None
-        except requests.exceptions.RequestException as e:
-            print('Error:', e)
-            return None  

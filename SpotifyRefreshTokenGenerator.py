@@ -32,7 +32,7 @@ REDIRECT_URI = "http://localhost:8888/callback"
 # Define the scopes your application needs.
 # You can find a full list here: https://developer.spotify.com/documentation/web-api/concepts/scopes
 # For general use, these are a good starting point.
-SCOPE = "user-read-private user-read-email playlist-modify-public playlist-modify-private"
+SCOPE = "user-read-private user-read-email playlist-modify-public playlist-modify-private user-top-read"
 
 # --- DO NOT EDIT BELOW THIS LINE ---
 

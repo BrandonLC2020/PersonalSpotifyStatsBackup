@@ -14,9 +14,10 @@ class DatabaseManager:
         try:
             self.db = mysql.connector.connect(
                 host=os.getenv('DB_HOST'),
-                user=os.getenv('DB_USER'),
+                user=os.getenv('DB_USERNAME'),
                 password=os.getenv('DB_PASSWORD'),
-                database=os.getenv('DB_NAME')
+                database=os.getenv('DB_NAME'),
+                port=os.getenv('DB_PORT')
             )
             self.cursor = self.db.cursor()
             print("Successfully connected to MySQL database.")
@@ -26,10 +27,9 @@ class DatabaseManager:
 
     def insert_top_tracks_into_db(self, top_tracks_of_the_month: MonthlyTopTracks):
         sql = """
-        INSERT INTO tracks (month, year, `rank`, name, track_id, duration_ms, is_explicit,
-        disc_number, track_number, popularity, album_id, artist_ids, acousticness, danceability,
-        energy, instrumentalness, liveness, loudness, speechiness, tempo, valence)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        INSERT INTO tracks (month, year, standing, name, track_id, duration_ms, is_explicit,
+        disc_number, track_number, popularity, album_id, artist_ids)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         ON DUPLICATE KEY UPDATE name=VALUES(name), popularity=VALUES(popularity);
         """
         track_list = []
@@ -39,11 +39,7 @@ class DatabaseManager:
                 top_tracks_of_the_month.month, top_tracks_of_the_month.year, rank,
                 track.name, track.track_id, track.duration, track.is_explicit,
                 track.disc_number, track.track_number, track.popularity,
-                track.album.album_id, artist_ids, track.track_features.acousticness,
-                track.track_features.danceability, track.track_features.energy,
-                track.track_features.instrumentalness, track.track_features.liveness,
-                track.track_features.loudness, track.track_features.speechiness,
-                track.track_features.tempo, track.track_features.valence
+                track.album.album_id, artist_ids
             )
             track_list.append(track_data)
 
@@ -53,7 +49,7 @@ class DatabaseManager:
 
     def insert_top_artists_into_db(self, top_artists_of_the_month: MonthlyTopArtists):
         sql = """
-        INSERT INTO artists (month, year, `rank`, name, artist_id, popularity, genres, images)
+        INSERT INTO artists (month, year, standing, name, artist_id, popularity, genres, images)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         ON DUPLICATE KEY UPDATE name=VALUES(name), popularity=VALUES(popularity);
         """
@@ -73,7 +69,7 @@ class DatabaseManager:
 
     def insert_top_albums_into_db(self, top_albums_of_the_month: MonthlyTopAlbums):
         sql = """
-        INSERT INTO albums (month, year, `rank`, name, album_id, album_type, release_date, images, artist_ids)
+        INSERT INTO albums (month, year, standing, name, album_id, album_type, release_date, images, artist_ids)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
         ON DUPLICATE KEY UPDATE name=VALUES(name);
         """
